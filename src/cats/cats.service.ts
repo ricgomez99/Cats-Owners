@@ -19,8 +19,9 @@ export class CatsService {
     return cats
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} cat`
+  async findOne(id: number): Promise<Cat> {
+    const catById = await this.catModel.findOne({ id: id })
+    return catById
   }
 
   update(id: number, updateCatDto: UpdateCatDto) {

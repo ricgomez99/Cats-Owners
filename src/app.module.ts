@@ -1,11 +1,15 @@
+import { ConfigModule } from '@nestjs/config'
 import { Module } from '@nestjs/common'
 // import { AppController } from './app.controller'
 // import { AppService } from './app.service'
 import { CatsModule } from './cats/cats.module'
 import { MongooseModule } from '@nestjs/mongoose'
 
-const uri = process.env.API_URI
 @Module({
-  imports: [CatsModule, MongooseModule.forRoot(uri)],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRoot(process.env.API_URI),
+    CatsModule,
+  ],
 })
 export class AppModule {}
