@@ -19,16 +19,16 @@ export class CatsService {
     return cats
   }
 
-  async findOne(id: number): Promise<Cat> {
-    const catById = await this.catModel.findOne({ id: id })
+  async findOne(id: string): Promise<Cat> {
+    const catById = await this.catModel.findOne({ _id: id })
     return catById
   }
 
-  update(id: number, updateCatDto: UpdateCatDto) {
-    return `This action updates a #${id} cat`
+  async update(id: string, updateCatDto: UpdateCatDto) {
+    return this.catModel.updateOne({ _id: id }, updateCatDto)
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} cat`
+  async remove(id: string) {
+    return this.catModel.deleteOne({ _id: id })
   }
 }

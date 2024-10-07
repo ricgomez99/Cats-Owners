@@ -1,11 +1,12 @@
 import { IsString, IsNumber } from 'class-validator'
-export class CreateCatDto {
+
+export class AddressDto {
   @IsString()
-  name: string
+  street: string
 
   @IsNumber()
-  age: number
+  number: number
 
   @IsString()
-  breed: string
+  city: string
 }

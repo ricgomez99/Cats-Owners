@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
-import { HydratedDocument } from 'mongoose'
+import mongoose, { HydratedDocument } from 'mongoose'
+import { Owner } from 'src/owner/schemas/owner.schema'
 
 export type CatDocument = HydratedDocument<Cat>
 
@@ -13,6 +14,9 @@ export class Cat {
 
   @Prop({ required: true })
   breed: string
+
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Owner' }] })
+  owners: Owner[]
 }
 
 export const CatSchema = SchemaFactory.createForClass(Cat)
