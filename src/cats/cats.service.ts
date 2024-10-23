@@ -9,9 +9,15 @@ import { InjectModel } from '@nestjs/mongoose'
 export class CatsService {
   constructor(@InjectModel(Cat.name) private catModel: Model<Cat>) {}
 
-  async create(createCatDto: CreateCatDto): Promise<Cat> {
-    const cat = new this.catModel(createCatDto)
-    return cat.save()
+  async create(createCatDto: CreateCatDto) {
+    try {
+      const cat = new this.catModel(createCatDto)
+      const result = await cat.save()
+
+      return { statusCode: 201, message: 'cat created', data: result }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   async findAll(): Promise<Cat[]> {
@@ -25,10 +31,20 @@ export class CatsService {
   }
 
   async update(id: string, updateCatDto: UpdateCatDto) {
-    return this.catModel.updateOne({ _id: id }, updateCatDto)
+    try {
+      const result = this.catModel.updateOne({ _id: id }, updateCatDto)
+      return result
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   async remove(id: string) {
-    return this.catModel.deleteOne({ _id: id })
+    try {
+      const result = this.catModel.deleteOne({ _id: id })
+      return result
+    } catch (error) {
+      console.log(error)
+    }
   }
 }

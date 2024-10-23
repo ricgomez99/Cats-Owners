@@ -18,7 +18,8 @@ export class CatsController {
 
   @Post()
   async create(@Body() createCatDto: CreateCatDto) {
-    await this.catsService.create(createCatDto)
+    const result = await this.catsService.create(createCatDto)
+    return result
   }
 
   @Get()
@@ -33,11 +34,13 @@ export class CatsController {
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateCatDto: UpdateCatDto) {
-    return this.catsService.update(id, updateCatDto)
+    const result = this.catsService.update(id, updateCatDto)
+    return result
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    return this.catsService.remove(id)
+    const result = this.catsService.remove(id)
+    return result
   }
 }
