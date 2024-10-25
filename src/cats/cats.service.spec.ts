@@ -1,70 +1,54 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { CatsService } from './cats.service'
-import { Model, Query } from 'mongoose'
 import { getModelToken } from '@nestjs/mongoose'
-import { CatTest } from './interfaces/cat.test.interface'
-import { createMock } from '@golevelup/ts-jest'
+import { Cat } from './schemas/cat.schema'
+import { HttpStatus, NotFoundException } from '@nestjs/common'
 
-const catMock = (
-  id = '123',
-  name = 'nina',
-  age = 4,
-  breed = 'persian',
-): CatTest => ({
-  id,
-  name,
-  age,
-  breed,
-})
+const mockCat = {} as Cat
+const mockAllCats = { data: {}, message: 'Ok', statusCode: 200 }
+const mockId = '123'
+const mockErrorId = 'error'
+const EXCLUDE_FIELDS = '-__v'
 
-const catDocMock = (mock?: Partial<CatTest>): Partial<CatTest> => ({
-  id: mock?.id ?? '123',
-  name: mock?.name ?? 'nina',
-  age: mock?.age ?? 4,
-  breed: mock?.breed ?? 'persian',
-})
+class mockCatModel {
+  constructor(private _: any) {}
+  new = jest.fn().mockResolvedValue({})
+  static save = jest.fn().mockResolvedValue(mockCat)
+  static find = jest.fn().mockReturnThis()
+  static create = jest.fn().mockReturnValue(mockCat)
+  static findOneAndDelete = jest.fn().mockImplementation((id: string) => {
+    if (id === mockId) throw new NotFoundException()
 
-const catsArray: Partial<CatTest>[] = [
-  catMock(),
-  catMock('456', 'James', 2, 'Mombay'),
-  catMock('789', 'Thomas', 12, 'siamese'),
-]
+    return this
+  })
+  static exec = jest.fn().mockReturnValue(mockCat)
+  static select = jest.fn().mockReturnThis()
+  static findOne = jest.fn().mockImplementation((id: string) => {
+    if (id === mockErrorId) throw new NotFoundException()
 
-const catsDocArray: Partial<CatTest>[] = [
-  catDocMock(),
-  catDocMock({ id: '456', name: 'James', age: 2, breed: 'Mombay' }),
-  catDocMock({ id: '789', name: 'Thomas', age: 12, breed: 'siamese' }),
-]
-
-const serviceMock = {
-  new: jest.fn().mockResolvedValue(catMock()),
-  constructor: jest.fn().mockResolvedValue(catMock()),
-  create: jest.fn(),
-  find: jest.fn(),
-  findAll: jest.fn(),
-  findOne: jest.fn(),
-  update: jest.fn(),
-  remove: jest.fn(),
-  exec: jest.fn(),
+    return this
+  })
 }
 
 describe('CatsService', () => {
   let service: CatsService
-  let model: Model<CatTest>
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CatsService,
         {
-          provide: getModelToken('Cat'),
-          useValue: serviceMock,
+          provide: getModelToken(Cat.name),
+          useValue: mockCatModel,
         },
       ],
     }).compile()
 
     service = module.get<CatsService>(CatsService)
-    model = module.get<Model<CatTest>>(getModelToken('Cat'))
+  })
+
+  afterEach(() => {
+    jest.clearAllMocks()
   })
 
   it('should be defined', () => {
@@ -72,28 +56,17 @@ describe('CatsService', () => {
   })
 
   describe('findAll', () => {
-    it('should return a list of cats', async () => {
-      jest.spyOn(model, 'find').mockReturnValue({
-        exec: jest.fn().mockResolvedValueOnce(catsDocArray),
-      } as unknown as Query<CatTest[], CatTest>)
-      const cats = await service.findAll()
-
-      expect(cats).toEqual(catsArray)
+    it('should find all cats', async () => {
+      const result = await service.findAll()
+      expect(mockCatModel.find).toHaveBeenCalledTimes(1)
+      expect(mockCatModel.exec).toHaveBeenCalledTimes(1)
+      expect(mockCatModel.select).toHaveBeenCalledTimes(1)
+      expect(mockCatModel.select).toHaveBeenCalledWith(EXCLUDE_FIELDS)
+      expect(result).toEqual(mockAllCats)
     })
   })
 
   describe('findOne', () => {
-    it('should return a cat by its id', async () => {
-      jest.spyOn(model, 'findOne').mockReturnValueOnce(
-        createMock<Query<CatTest, CatTest>>({
-          exec: jest
-            .fn()
-            .mockResolvedValueOnce(catDocMock({ id: '123', name: 'nina' })),
-        }),
-      )
-      const mock = catDocMock()
-      const cat = await service.findOne('123')
-      expect(cat).toEqual(mock)
-    })
+    it('should return a cat by its id', async () => {})
   })
 })

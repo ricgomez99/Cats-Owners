@@ -7,6 +7,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { errorHandler } from '../utils/errorHandler'
 import { responseHandler } from '../utils/responseHandler'
 
+const EXCLUDE_FIELDS = '-__v'
 @Injectable()
 export class CatsService {
   constructor(@InjectModel(Cat.name) private catModel: Model<Cat>) {}
@@ -35,7 +36,7 @@ export class CatsService {
 
   async findAll() {
     try {
-      const cats = await this.catModel.find().exec()
+      const cats = await this.catModel.find().select(EXCLUDE_FIELDS).exec()
       return responseHandler({
         statusCode: 200,
         message: 'Ok',
@@ -55,7 +56,10 @@ export class CatsService {
 
   async findOne(id: string) {
     try {
-      const catById = await this.catModel.findOne({ _id: id })
+      const catById = await this.catModel
+        .findOne({ _id: id })
+        .select(EXCLUDE_FIELDS)
+        .exec()
 
       return catById
         ? responseHandler({
