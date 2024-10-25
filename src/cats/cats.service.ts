@@ -2,8 +2,10 @@ import { Injectable } from '@nestjs/common'
 import { CreateCatDto } from './dto/create-cat.dto'
 import { UpdateCatDto } from './dto/update-cat.dto'
 import { Cat } from './schemas/cat.schema'
-import { Model } from 'mongoose'
+import mongoose, { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
+import { errorHandler } from '../utils/errorHandler'
+import { responseHandler } from '../utils/responseHandler'
 
 @Injectable()
 export class CatsService {
@@ -14,37 +16,118 @@ export class CatsService {
       const cat = new this.catModel(createCatDto)
       const result = await cat.save()
 
-      return { statusCode: 201, message: 'cat created', data: result }
+      return responseHandler({
+        statusCode: 201,
+        data: result,
+        message: 'cat created',
+        success: true,
+      })
     } catch (error) {
-      console.log(error)
+      if (error instanceof Error) {
+        return errorHandler({
+          statusCode: 400,
+          data: [],
+          message: error.message,
+        })
+      }
     }
   }
 
-  async findAll(): Promise<Cat[]> {
-    const cats = await this.catModel.find().exec()
-    return cats
+  async findAll() {
+    try {
+      const cats = await this.catModel.find().exec()
+      return responseHandler({
+        statusCode: 200,
+        message: 'Ok',
+        data: cats,
+        success: true,
+      })
+    } catch (error) {
+      if (error instanceof Error) {
+        return errorHandler({
+          statusCode: 400,
+          data: [],
+          message: error.message,
+        })
+      }
+    }
   }
 
-  async findOne(id: string): Promise<Cat> {
-    const catById = await this.catModel.findOne({ _id: id })
-    return catById
+  async findOne(id: string) {
+    try {
+      const catById = await this.catModel.findOne({ _id: id })
+
+      return catById
+        ? responseHandler({
+            statusCode: 200,
+            data: catById,
+            message: 'OK',
+            success: true,
+          })
+        : responseHandler({
+            statusCode: 404,
+            data: [],
+            message: 'Ivalid id, cat not found',
+            success: false,
+          })
+    } catch (error) {
+      if (error instanceof mongoose.Error.CastError) {
+        return errorHandler({
+          statusCode: 400,
+          data: error.reason.message,
+          message: error.message,
+        })
+      }
+    }
   }
 
   async update(id: string, updateCatDto: UpdateCatDto) {
     try {
-      const result = this.catModel.updateOne({ _id: id }, updateCatDto)
+      const result = await this.catModel.updateOne({ _id: id }, updateCatDto)
+
       return result
+        ? responseHandler({
+            statusCode: 201,
+            message: 'cat updated successfully',
+            data: result,
+            success: true,
+          })
+        : responseHandler({
+            statusCode: 404,
+            message: 'unable to update cat',
+            data: result,
+            success: false,
+          })
     } catch (error) {
-      console.log(error)
+      if (error instanceof mongoose.Error.CastError) {
+        return errorHandler({
+          statusCode: 400,
+          data: error.reason.message,
+          message: error.message,
+        })
+      }
     }
   }
 
   async remove(id: string) {
     try {
-      const result = this.catModel.deleteOne({ _id: id })
-      return result
+      const result = await this.catModel.deleteOne({ _id: id })
+
+      return responseHandler({
+        statusCode: 201,
+        message: 'cat deleted successfully',
+        data: result,
+        success: true,
+      })
     } catch (error) {
-      console.log(error)
+      if (error instanceof mongoose.Error.CastError) {
+        console.log(error, 'type: ', typeof error)
+        return errorHandler({
+          statusCode: 400,
+          data: error.reason.message,
+          message: error.message,
+        })
+      }
     }
   }
 }

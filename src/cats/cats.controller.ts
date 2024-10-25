@@ -10,7 +10,6 @@ import {
 import { CatsService } from './cats.service'
 import { CreateCatDto } from './dto/create-cat.dto'
 import { UpdateCatDto } from './dto/update-cat.dto'
-import { Cat } from './interfaces/cat.interface'
 
 @Controller('cats')
 export class CatsController {
@@ -18,29 +17,51 @@ export class CatsController {
 
   @Post()
   async create(@Body() createCatDto: CreateCatDto) {
-    const result = await this.catsService.create(createCatDto)
-    return result
+    try {
+      const result = await this.catsService.create(createCatDto)
+      return result
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   @Get()
-  async findAll(): Promise<Cat[]> {
-    return this.catsService.findAll()
+  async findAll() {
+    try {
+      const result = this.catsService.findAll()
+      return result
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return this.catsService.findOne(id)
+    try {
+      const result = this.catsService.findOne(id)
+      return result
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateCatDto: UpdateCatDto) {
-    const result = this.catsService.update(id, updateCatDto)
-    return result
+    try {
+      const result = this.catsService.update(id, updateCatDto)
+      return result
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    const result = this.catsService.remove(id)
-    return result
+    try {
+      const result = this.catsService.remove(id)
+      return result
+    } catch (error) {
+      console.log(error)
+    }
   }
 }
