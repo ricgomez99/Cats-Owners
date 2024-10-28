@@ -5,7 +5,13 @@ import { Cat } from './schemas/cat.schema'
 import { HttpStatus, NotFoundException } from '@nestjs/common'
 
 const mockCat = {} as Cat
+const catById = { data: {}, message: 'OK', statusCode: 200 }
 const mockAllCats = { data: {}, message: 'Ok', statusCode: 200 }
+const mockCreateCat = { data: {}, message: 'cat created', statusCode: 201 }
+const mockUpdateCat = {
+  message: 'cat updated successfully',
+  statusCode: 201,
+}
 const mockId = '123'
 const mockErrorId = 'error'
 const EXCLUDE_FIELDS = '-__v'
@@ -13,9 +19,10 @@ const EXCLUDE_FIELDS = '-__v'
 class mockCatModel {
   constructor(private _: any) {}
   new = jest.fn().mockResolvedValue({})
-  static save = jest.fn().mockResolvedValue(mockCat)
+  save = jest.fn().mockResolvedValue(mockCat)
   static find = jest.fn().mockReturnThis()
   static create = jest.fn().mockReturnValue(mockCat)
+  static updateOne = jest.fn().mockReturnValue({ mockId, mockCat })
   static findOneAndDelete = jest.fn().mockImplementation((id: string) => {
     if (id === mockId) throw new NotFoundException()
 
@@ -55,6 +62,14 @@ describe('CatsService', () => {
     expect(service).toBeDefined()
   })
 
+  describe('create', () => {
+    it('should create a new cat', async () => {
+      const result = await service.create(mockCat)
+
+      expect(result).toEqual(mockCreateCat)
+    })
+  })
+
   describe('findAll', () => {
     it('should find all cats', async () => {
       const result = await service.findAll()
@@ -67,6 +82,31 @@ describe('CatsService', () => {
   })
 
   describe('findOne', () => {
-    it('should return a cat by its id', async () => {})
+    it('should return a cat by its id', async () => {
+      const result = await service.findOne(mockId)
+      expect(mockCatModel.findOne).toHaveBeenCalledTimes(1)
+      expect(mockCatModel.findOne).toHaveBeenCalledWith({ _id: mockId })
+      expect(mockCatModel.exec).toHaveBeenCalledTimes(1)
+      expect(mockCatModel.select).toHaveBeenCalledTimes(1)
+      expect(mockCatModel.select).toHaveBeenCalledWith(EXCLUDE_FIELDS)
+      expect(result).toEqual(catById)
+    })
+  })
+
+  describe('update', () => {
+    it('should update a cat', async () => {
+      const result = await service.update(mockId, mockCat)
+      expect(mockCatModel.updateOne).toHaveBeenCalledTimes(1)
+      expect(mockCatModel.updateOne).toHaveBeenCalledWith(
+        {
+          _id: mockId,
+        },
+        mockCat,
+      )
+      expect(result).toEqual({
+        data: { mockCat: mockCat, mockId: mockId },
+        ...mockUpdateCat,
+      })
+    })
   })
 })
