@@ -8,6 +8,10 @@ const mockCat = {} as Cat
 const catById = { data: {}, message: 'OK', statusCode: 200 }
 const mockAllCats = { data: {}, message: 'Ok', statusCode: 200 }
 const mockCreateCat = { data: {}, message: 'cat created', statusCode: 201 }
+const mockDeleteCat = {
+  message: 'cat deleted successfully',
+  statusCode: 201,
+}
 const mockUpdateCat = {
   message: 'cat updated successfully',
   statusCode: 201,
@@ -23,7 +27,7 @@ class mockCatModel {
   static find = jest.fn().mockReturnThis()
   static create = jest.fn().mockReturnValue(mockCat)
   static updateOne = jest.fn().mockReturnValue({ mockId, mockCat })
-  static findOneAndDelete = jest.fn().mockImplementation((id: string) => {
+  static deleteOne = jest.fn().mockImplementation((id: string) => {
     if (id === mockId) throw new NotFoundException()
 
     return this
@@ -91,6 +95,16 @@ describe('CatsService', () => {
       expect(mockCatModel.select).toHaveBeenCalledWith(EXCLUDE_FIELDS)
       expect(result).toEqual(catById)
     })
+
+    it('should throw NoFoundException', async () => {
+      try {
+        await service.findOne(mockErrorId)
+      } catch (error: any) {
+        expect(error.message).toEqual('Not Found')
+        expect(error.status).toEqual(HttpStatus.NOT_FOUND)
+        expect(error.name).toEqual('NotFoundException')
+      }
+    })
   })
 
   describe('update', () => {
@@ -107,6 +121,17 @@ describe('CatsService', () => {
         data: { mockCat: mockCat, mockId: mockId },
         ...mockUpdateCat,
       })
+    })
+  })
+
+  describe('delete', () => {
+    it('should delete a cat', async () => {
+      const result = await service.remove(mockId)
+      expect(mockCatModel.deleteOne).toHaveBeenCalledTimes(1)
+      expect(mockCatModel.deleteOne).toHaveBeenCalledWith({
+        _id: mockId,
+      })
+      expect(result).toEqual({ ...result, ...mockDeleteCat })
     })
   })
 })

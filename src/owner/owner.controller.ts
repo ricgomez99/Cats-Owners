@@ -23,13 +23,13 @@ export class OwnerController {
   }
 
   @Get()
-  async findAll(): Promise<Owner[]> {
+  async findAll() {
     const owners = await this.ownerService.findAll()
     return owners
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Owner> {
+  async findOne(@Param('id') id: string) {
     const owner = await this.ownerService.findOne(id)
     return owner
   }
