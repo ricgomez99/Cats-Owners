@@ -1,4 +1,18 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateOwnerDto } from './create-owner.dto';
+import { IsNumber, IsString, ValidateNested, IsOptional } from 'class-validator'
+import { PartialAddressDto } from './partial-address.dto'
+import { Type } from 'class-transformer'
 
-export class UpdateOwnerDto extends PartialType(CreateOwnerDto) {}
+export class UpdateOwnerDto {
+  @IsOptional()
+  @IsString()
+  name?: string
+
+  @IsOptional()
+  @IsNumber()
+  age?: number
+
+  @ValidateNested()
+  @Type(() => PartialAddressDto)
+  @IsOptional()
+  address?: PartialAddressDto
+}

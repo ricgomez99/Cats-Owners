@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { CreateCatDto } from './dto/create-cat.dto'
 import { UpdateCatDto } from './dto/update-cat.dto'
 import { Cat } from './schemas/cat.schema'
@@ -61,24 +61,29 @@ export class CatsService {
         .select(EXCLUDE_FIELDS)
         .exec()
 
-      return catById
-        ? responseHandler({
-            statusCode: 200,
-            data: catById,
-            message: 'OK',
-            success: true,
-          })
-        : responseHandler({
-            statusCode: 404,
-            data: [],
-            message: 'Ivalid id, cat not found',
-            success: false,
-          })
+      if (!catById) {
+        throw new NotFoundException('Cat not found')
+      }
+
+      return responseHandler({
+        statusCode: 200,
+        data: catById,
+        message: 'OK',
+        success: true,
+      })
     } catch (error) {
       if (error instanceof mongoose.Error.CastError) {
         return errorHandler({
           statusCode: 400,
           data: error.reason.message,
+          message: error.message,
+        })
+      }
+
+      if (error instanceof NotFoundException) {
+        return errorHandler({
+          statusCode: 404,
+          data: error.name,
           message: error.message,
         })
       }

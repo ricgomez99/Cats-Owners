@@ -10,14 +10,13 @@ import {
 import { OwnerService } from './owner.service'
 import { CreateOwnerDto } from './dto/create-owner.dto'
 import { UpdateOwnerDto } from './dto/update-owner.dto'
-import { Owner } from './interfaces/owner.interface'
 
 @Controller('owner')
 export class OwnerController {
   constructor(private readonly ownerService: OwnerService) {}
 
   @Post()
-  async create(@Body() createOwnerDto: CreateOwnerDto): Promise<Owner> {
+  async create(@Body() createOwnerDto: CreateOwnerDto) {
     const newOwner = await this.ownerService.create(createOwnerDto)
     return newOwner
   }
