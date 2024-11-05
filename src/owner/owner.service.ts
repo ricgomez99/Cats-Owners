@@ -44,17 +44,14 @@ export class OwnerService {
 
   async findOne(id: string) {
     try {
-      const existingOwner = await this.ownerModel.findOne({ _id: id }).exec()
-
-      if (!existingOwner) {
-        throw new NotFoundException('Owner not found')
-      }
-
       const result = await this.ownerModel
         .findById(id)
         .select(EXCLUDE_FIELDS)
         .exec()
-      console.log('result: ', result)
+
+      if (!result) {
+        throw new NotFoundException('Owner not found')
+      }
 
       return { statusCode: 200, data: result, message: 'OK' }
     } catch (error) {
